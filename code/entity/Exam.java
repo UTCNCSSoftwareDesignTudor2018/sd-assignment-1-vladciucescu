@@ -1,4 +1,4 @@
-package dataAccess.entity;
+package entity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -6,9 +6,9 @@ import java.util.Objects;
 
 public class Exam extends DataEntity {
 
-    private LocalDate date;
-    private LocalTime time;
-    private Boolean written;
+    private final LocalDate date;
+    private final LocalTime time;
+    private final Boolean written;
 
     public Exam() {
         super();
@@ -28,37 +28,29 @@ public class Exam extends DataEntity {
         return date;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
     public LocalTime getTime() {
         return time;
-    }
-
-    public void setTime(LocalTime time) {
-        this.time = time;
     }
 
     public Boolean getWritten() {
         return written;
     }
 
-    public void setWritten(Boolean written) {
-        this.written = written;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         Exam exam = (Exam) o;
-        return getId()==exam.getId();
+        return Objects.equals(date, exam.date) &&
+                Objects.equals(time, exam.time) &&
+                Objects.equals(written, exam.written);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode());
+
+        return Objects.hash(super.hashCode(), date, time, written);
     }
 
     @Override

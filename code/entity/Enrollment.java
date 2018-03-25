@@ -1,29 +1,29 @@
-package dataAccess.entity;
+package entity;
 
 import java.util.Objects;
 
 public class Enrollment extends DataEntity {
 
-    private final StudentAccount student;
+    private final StudentProfile studentProfile;
     private final Course course;
-    private Double grade;
+    private final Double grade;
 
     public Enrollment() {
         super();
-        this.student = new StudentAccount();
+        this.studentProfile = new StudentProfile();
         this.course = new Course();
         this.grade = 1.0;
     }
 
-    public Enrollment(int id, StudentAccount student, Course course, Double grade) {
+    public Enrollment(int id, StudentProfile studentProfile, Course course, Double grade) {
         super(id);
-        this.student = student;
+        this.studentProfile = studentProfile;
         this.course = course;
         this.grade = grade;
     }
 
-    public StudentAccount getStudent() {
-        return student;
+    public StudentProfile getStudentProfile() {
+        return studentProfile;
     }
 
     public Course getCourse() {
@@ -34,30 +34,27 @@ public class Enrollment extends DataEntity {
         return grade;
     }
 
-    public void setGrade(Double grade) {
-        this.grade = grade;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Enrollment that = (Enrollment) o;
-        return getId() == that.getId() &&
-                Objects.equals(student, that.student) &&
-                Objects.equals(course, that.course);
+        return Objects.equals(studentProfile, that.studentProfile) &&
+                Objects.equals(course, that.course) &&
+                Objects.equals(grade, that.grade);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), student, course);
+
+        return Objects.hash(super.hashCode(), studentProfile, course, grade);
     }
 
     @Override
     public String toString() {
         return "Enrollment{" +
-                "student=" + student +
+                "studentProfile=" + studentProfile +
                 ", course=" + course +
                 ", grade=" + grade +
                 '}';

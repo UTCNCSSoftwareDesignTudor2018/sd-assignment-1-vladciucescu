@@ -1,14 +1,14 @@
-package dataAccess.entity;
+package entity;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
 public class Course extends DataEntity {
 
-    private String name;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private Exam exam;
+    private final String name;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
+    private final Exam exam;
 
     public Course() {
         super();
@@ -30,32 +30,16 @@ public class Course extends DataEntity {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public LocalDate getStartDate() {
         return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
     }
 
     public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
     public Exam getExam() {
         return exam;
-    }
-
-    public void setExam(Exam exam) {
-        this.exam = exam;
     }
 
     @Override
@@ -64,12 +48,16 @@ public class Course extends DataEntity {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Course course = (Course) o;
-        return getId() == course.getId();
+        return Objects.equals(name, course.name) &&
+                Objects.equals(startDate, course.startDate) &&
+                Objects.equals(endDate, course.endDate) &&
+                Objects.equals(exam, course.exam);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode());
+
+        return Objects.hash(super.hashCode(), name, startDate, endDate, exam);
     }
 
     @Override

@@ -1,7 +1,7 @@
-package dataAccess.dao;
+package dataAccess;
 
-import dataAccess.entity.AdminAccount;
-import dataAccess.entity.User;
+import entity.AdminProfile;
+import entity.Profile;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,52 +10,50 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdminDAO implements EntityDAO<AdminAccount> {
+public class AdminDAO {
 
     private static final String TABLE_NAME = "admins";
 
-    @Override
-    public AdminAccount find(int id) throws DataAccessException {
-        AdminAccount admin = null;
+    public AdminProfile findById(int id) throws DataAccessException {
+        AdminProfile adminProfile = null;
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
         try {
             statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE id = " + id);
             statement.executeQuery();
             resultSet = statement.getResultSet();
             if (resultSet.next()) {
-                User user = userDAO.find(resultSet.getInt(1));
-                admin = new AdminAccount(user);
+                Profile profile = profileDAO.findById(resultSet.getInt(1));
+                adminProfile = new AdminProfile(profile);
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Find all error ", e);
+            throw new DataAccessException("Find error ", e);
         } finally {
             ConnectionFactory.close(resultSet);
             ConnectionFactory.close(statement);
             ConnectionFactory.close(con);
         }
 
-        return admin;
+        return adminProfile;
     }
 
-    @Override
-    public List<AdminAccount> findAll() throws DataAccessException {
-        List<AdminAccount> admins = new ArrayList<>();
+    public List<AdminProfile> findAll() throws DataAccessException {
+        List<AdminProfile> adminProfiles = new ArrayList<>();
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
         try {
             statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME);
             statement.executeQuery();
             resultSet = statement.getResultSet();
             while (resultSet.next()) {
-                User user = userDAO.find(resultSet.getInt(1));
-                admins.add(new AdminAccount(user));
+                Profile profile = profileDAO.findById(resultSet.getInt(1));
+                adminProfiles.add(new AdminProfile(profile));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Find all error ", e);
@@ -65,16 +63,15 @@ public class AdminDAO implements EntityDAO<AdminAccount> {
             ConnectionFactory.close(con);
         }
 
-        return admins;
+        return adminProfiles;
     }
 
-    @Override
-    public int insert(AdminAccount obj) throws DataAccessException {
+    public int insert(AdminProfile obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
-        int insertedId = userDAO.insert(obj);
+        int insertedId = profileDAO.insert(obj);
         try {
             statement = con.prepareStatement("INSERT INTO " + TABLE_NAME + "(id) VALUES(?)");
             statement.setInt(1, insertedId);
@@ -89,23 +86,21 @@ public class AdminDAO implements EntityDAO<AdminAccount> {
         return insertedId;
     }
 
-    @Override
-    public void update(AdminAccount obj) throws DataAccessException {
+    public void update(AdminProfile obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         ResultSet resultSet = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
-        userDAO.update(obj);
+        profileDAO.update(obj);
         ConnectionFactory.close(con);
     }
 
-    @Override
     public void delete(int id) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
-        userDAO.delete(id);
+        profileDAO.delete(id);
         try {
             statement = con.prepareStatement("DELETE FROM " + TABLE_NAME + " WHERE id = ?");
             statement.setInt(1, id);

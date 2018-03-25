@@ -1,7 +1,7 @@
-package dataAccess.dao;
+package dataAccess;
 
-import dataAccess.entity.StudentAccount;
-import dataAccess.entity.User;
+import entity.StudentProfile;
+import entity.Profile;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,52 +10,50 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StudentDAO implements EntityDAO<StudentAccount> {
+public class StudentDAO {
 
     private static final String TABLE_NAME = "students";
 
-    @Override
-    public StudentAccount find(int id) throws DataAccessException {
-        StudentAccount student = null;
+    public StudentProfile findById(int id) throws DataAccessException {
+        StudentProfile studentProfile = null;
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
         try {
             statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE id = " + id);
             statement.executeQuery();
             resultSet = statement.getResultSet();
             if (resultSet.next()) {
-                User user = userDAO.find(resultSet.getInt(1));
-                student = new StudentAccount(user, resultSet.getInt(2), resultSet.getInt(3));
+                Profile profile = profileDAO.findById( resultSet.getInt(1));
+                studentProfile = new StudentProfile(profile, resultSet.getInt(2), resultSet.getInt(3));
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Find all error ", e);
+            throw new DataAccessException("Find error ", e);
         } finally {
             ConnectionFactory.close(resultSet);
             ConnectionFactory.close(statement);
             ConnectionFactory.close(con);
         }
 
-        return student;
+        return studentProfile;
     }
 
-    @Override
-    public List<StudentAccount> findAll() throws DataAccessException {
-        List<StudentAccount> students = new ArrayList<>();
+    public List<StudentProfile> findAll() throws DataAccessException {
+        List<StudentProfile> studentProfiles = new ArrayList<>();
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
         try {
             statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME);
             statement.executeQuery();
             resultSet = statement.getResultSet();
             while (resultSet.next()) {
-                User user = userDAO.find(resultSet.getInt(1));
-                students.add(new StudentAccount(user, resultSet.getInt(2), resultSet.getInt(3)));
+                Profile profile = profileDAO.findById( resultSet.getInt(1));
+                studentProfiles.add(new StudentProfile(profile, resultSet.getInt(2), resultSet.getInt(3)));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Find all error ", e);
@@ -65,16 +63,15 @@ public class StudentDAO implements EntityDAO<StudentAccount> {
             ConnectionFactory.close(con);
         }
 
-        return students;
+        return studentProfiles;
     }
 
-    @Override
-    public int insert(StudentAccount obj) throws DataAccessException {
+    public int insert(StudentProfile obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
-        int insertedId = userDAO.insert(obj);
+        int insertedId = profileDAO.insert(obj);
         try {
             statement = con.prepareStatement("INSERT INTO " + TABLE_NAME + "(id, year, group) VALUES(?,?,?)");
             statement.setInt(1, insertedId);
@@ -91,14 +88,13 @@ public class StudentDAO implements EntityDAO<StudentAccount> {
         return insertedId;
     }
 
-    @Override
-    public void update(StudentAccount obj) throws DataAccessException {
+    public void update(StudentProfile obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
-        userDAO.update(obj);
+        profileDAO.update(obj);
         try {
             statement = con.prepareStatement("UPDATE " + TABLE_NAME + " SET year=?, group=? WHERE id = ?");
             statement.setInt(1, obj.getYear());
@@ -113,13 +109,12 @@ public class StudentDAO implements EntityDAO<StudentAccount> {
         }
     }
 
-    @Override
     public void delete(int id) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
-        UserDAO userDAO = new UserDAO();
+        ProfileDAO profileDAO = new ProfileDAO();
 
-        userDAO.delete(id);
+        profileDAO.delete(id);
         try {
             statement = con.prepareStatement("DELETE FROM " + TABLE_NAME + " WHERE id = ?");
             statement.setInt(1, id);

@@ -1,22 +1,22 @@
-package dataAccess.entity;
+package entity;
 
 import java.util.Objects;
 
-public class Admin extends User {
+public class AdminProfile extends Profile {
 
-    public Admin() {
+    public AdminProfile() {
         super();
     }
 
-    public Admin(User user) {
-        super(user.getId(), user.getName(), user.getId_card_number(), user.getAddress());
+    public AdminProfile(Profile profile) {
+        super(profile.getId(), profile.getName(), profile.getId_card_number(), profile.getAddress());
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
+        AdminProfile user = (AdminProfile) o;
         return getId() == user.getId();
     }
 
@@ -28,6 +28,6 @@ public class Admin extends User {
 
     @Override
     public String toString() {
-        return "Admin{id=" + getId() + "}";
+        return "AdminProfile{id=" + getId() + "}";
     }
 }

@@ -1,17 +1,17 @@
-package dataAccess.dao;
+package dataAccess;
 
-import dataAccess.entity.Exam;
+import entity.Exam;
+import entity.StudentProfile;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-class ExamDAO implements EntityDAO<Exam> {
+public class ExamDAO {
 
     private static final String TABLE_NAME = "exams";
 
-    @Override
-    public Exam find(int id) throws DataAccessException {
+    public Exam findById(int id) throws DataAccessException {
         Exam exam = null;
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
@@ -38,7 +38,6 @@ class ExamDAO implements EntityDAO<Exam> {
         return exam;
     }
 
-    @Override
     public List<Exam> findAll() throws DataAccessException {
         List<Exam> exams = new ArrayList<>();
         Connection con = ConnectionFactory.getConnection();
@@ -66,7 +65,34 @@ class ExamDAO implements EntityDAO<Exam> {
         return exams;
     }
 
-    @Override
+    public List<Exam> findAllForStudent(StudentProfile student) throws DataAccessException {
+        List<Exam> exams = new ArrayList<>();
+        Connection con = ConnectionFactory.getConnection();
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE id = " +
+                    "(SELECT exam_id FROM enrollments JOIN courses ON courses.id = enrollments.id) WHERE student_id="+student.getId());
+            statement.executeQuery();
+            resultSet = statement.getResultSet();
+            while (resultSet.next()) {
+                exams.add(new Exam(resultSet.getInt(1),
+                        resultSet.getDate(2).toLocalDate(),
+                        resultSet.getTime(3).toLocalTime(),
+                        resultSet.getBoolean(4)));
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Find all error ", e);
+        } finally {
+            ConnectionFactory.close(resultSet);
+            ConnectionFactory.close(statement);
+            ConnectionFactory.close(con);
+        }
+
+        return exams;
+    }
+
     public int insert(Exam obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
@@ -94,7 +120,6 @@ class ExamDAO implements EntityDAO<Exam> {
         return insertedId;
     }
 
-    @Override
     public void update(Exam obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
@@ -115,7 +140,6 @@ class ExamDAO implements EntityDAO<Exam> {
         }
     }
 
-    @Override
     public void delete(int id) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;

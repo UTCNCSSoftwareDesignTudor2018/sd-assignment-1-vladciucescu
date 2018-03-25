@@ -1,4 +1,4 @@
-package dataAccess.dao;
+package dataAccess;
 
 import java.sql.*;
 

@@ -1,28 +1,28 @@
-package dataAccess.entity;
+package entity;
 
 import java.util.Objects;
 
 public class Account extends DataEntity {
 
     private final String username;
-    private String password;
-    private String email;
-    private final User user;
+    private final String password;
+    private final String email;
+    private final Profile profile;
 
     public Account() {
         super();
         this.username = "username";
         this.password = "123";
         this.email = "mail@domain.com";
-        this.user = new User();
+        this.profile = new Profile();
     }
 
-    public Account(int id, String username, String password, String email, User user) {
+    public Account(int id, String username, String password, String email, Profile profile) {
         super(id);
         this.username = username;
         this.password = password;
         this.email = email;
-        this.user = user;
+        this.profile = profile;
     }
 
     public String getUsername() {
@@ -33,34 +33,30 @@ public class Account extends DataEntity {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public User getUser() {
-        return user;
+    public Profile getProfile() {
+        return profile;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         Account account = (Account) o;
-        return getId() == account.getId() && username.equals(account.getUsername());
+        return Objects.equals(username, account.username) &&
+                Objects.equals(password, account.password) &&
+                Objects.equals(email, account.email) &&
+                Objects.equals(profile, account.profile);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(super.hashCode(), username);
+        return Objects.hash(super.hashCode(), username, password, email, profile);
     }
 
     @Override

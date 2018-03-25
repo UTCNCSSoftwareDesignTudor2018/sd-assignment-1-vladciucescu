@@ -1,4 +1,4 @@
-package dataAccess.entity;
+package entity;
 
 import java.util.Objects;
 

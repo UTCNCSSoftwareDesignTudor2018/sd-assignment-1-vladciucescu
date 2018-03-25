@@ -1,20 +1,20 @@
-package dataAccess.entity;
+package entity;
 
 import java.util.Objects;
 
-public class StudentAccount extends User {
+public class StudentProfile extends Profile {
 
-    private int year;
-    private int group;
+    private final int year;
+    private final int group;
 
-    public StudentAccount() {
+    public StudentProfile() {
         super();
         this.year = 1;
         this.group = 1;
     }
 
-    public StudentAccount(User user, int year, int group) {
-        super(user.getId(), user.getName(), user.getId_card_number(), user.getAddress());
+    public StudentProfile(Profile profile, int year, int group) {
+        super(profile.getId(), profile.getName(), profile.getId_card_number(), profile.getAddress());
         this.year = year;
         this.group = group;
     }
@@ -23,16 +23,8 @@ public class StudentAccount extends User {
         return year;
     }
 
-    public void setYear(int year) {
-        this.year = year;
-    }
-
     public int getGroup() {
         return group;
-    }
-
-    public void setGroup(int group) {
-        this.group = group;
     }
 
     @Override
@@ -40,19 +32,20 @@ public class StudentAccount extends User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        StudentAccount student = (StudentAccount) o;
-        return getId() == student.getId();
+        StudentProfile studentProfile = (StudentProfile) o;
+        return year == studentProfile.year &&
+                group == studentProfile.group;
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(super.hashCode());
+        return Objects.hash(super.hashCode(), year, group);
     }
 
     @Override
     public String toString() {
-        return "StudentAccount{" +
+        return "StudentProfile{" +
                 "year=" + year +
                 ", group=" + group +
                 '}';

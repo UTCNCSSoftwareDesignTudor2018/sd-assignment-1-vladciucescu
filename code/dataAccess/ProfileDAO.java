@@ -1,40 +1,30 @@
-package dataAccess.dao;
+package dataAccess;
 
-import dataAccess.entity.Course;
-import dataAccess.entity.Exam;
+import entity.Profile;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-@SuppressWarnings("ALL")
-class CourseDAO implements EntityDAO<Course> {
+public class ProfileDAO {
 
-    private static final String TABLE_NAME = "courses";
+    private static final String TABLE_NAME = "users";
 
-    CourseDAO() {
-    }
-
-    @Override
-    public Course find(int id) throws DataAccessException {
-        Course course = null;
+    public Profile findById(int id) throws DataAccessException {
+        Profile profile = null;
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        ExamDAO examDAO = new ExamDAO();
 
         try {
             statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE id = " + id);
             statement.executeQuery();
             resultSet = statement.getResultSet();
-
             if (resultSet.next()) {
-                Exam exam = examDAO.find(resultSet.getInt(1));
-                course = new Course(resultSet.getInt(1),
+                profile = new Profile(resultSet.getInt(1),
                         resultSet.getString(2),
-                        resultSet.getDate(3).toLocalDate(),
-                        resultSet.getDate(4).toLocalDate(), exam);
+                        resultSet.getInt(3),
+                        resultSet.getString(4));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Find error ", e);
@@ -44,30 +34,53 @@ class CourseDAO implements EntityDAO<Course> {
             ConnectionFactory.close(con);
         }
 
-        return course;
+        return profile;
     }
 
-    @Override
-    public List<Course> findAll() throws DataAccessException {
-        List<Course> courses = new ArrayList<>();
+    public Profile findByIdCardNumber(int idCardNumber) throws DataAccessException {
+        Profile profile = null;
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        ExamDAO examDAO = new ExamDAO();
+
+        try {
+            statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE id_card_number = " + idCardNumber);
+            statement.executeQuery();
+            resultSet = statement.getResultSet();
+            if (resultSet.next()) {
+                profile = new Profile(resultSet.getInt(1),
+                        resultSet.getString(2),
+                        resultSet.getInt(3),
+                        resultSet.getString(4));
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Find error ", e);
+        } finally {
+            ConnectionFactory.close(resultSet);
+            ConnectionFactory.close(statement);
+            ConnectionFactory.close(con);
+        }
+
+        return profile;
+    }
+
+    public List<Profile> findAll() throws DataAccessException {
+        List<Profile> profiles = new ArrayList<>();
+        Connection con = ConnectionFactory.getConnection();
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
 
         try {
             statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME);
             statement.executeQuery();
             resultSet = statement.getResultSet();
             while (resultSet.next()) {
-                Exam exam = examDAO.find(resultSet.getInt(5));
-                courses.add(new Course(resultSet.getInt(1),
+                profiles.add(new Profile(resultSet.getInt(1),
                         resultSet.getString(2),
-                        resultSet.getDate(3).toLocalDate(),
-                        resultSet.getDate(4).toLocalDate(),
-                        exam));
+                        resultSet.getInt(3),
+                        resultSet.getString(4)));
             }
-        } catch (SQLException | NoSuchElementException e) {
+        } catch (SQLException e) {
             throw new DataAccessException("Find all error ", e);
         } finally {
             ConnectionFactory.close(resultSet);
@@ -75,24 +88,22 @@ class CourseDAO implements EntityDAO<Course> {
             ConnectionFactory.close(con);
         }
 
-        return courses;
+        return profiles;
     }
 
-    @Override
-    public int insert(Course obj) throws DataAccessException {
+    public int insert(Profile obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         int insertedId = 0;
 
         try {
-            statement = con.prepareStatement("INSERT INTO " + TABLE_NAME + "(course_name, start_date, end_date, exam_id) VALUES(?,?,?,?)");
+            statement = con.prepareStatement("INSERT INTO " + TABLE_NAME + "(name, id_card_number, address) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, obj.getName());
-            statement.setDate(2, Date.valueOf(obj.getStartDate()));
-            statement.setDate(3, Date.valueOf(obj.getEndDate()));
-            statement.setInt(4, obj.getExam().getId());
+            statement.setInt(2, obj.getId_card_number());
+            statement.setString(3, obj.getAddress());
             statement.executeUpdate();
-            resultSet = statement.getResultSet();
+            resultSet = statement.getGeneratedKeys();
             if (resultSet.next()) {
                 insertedId = resultSet.getInt(1);
             }
@@ -107,19 +118,16 @@ class CourseDAO implements EntityDAO<Course> {
         return insertedId;
     }
 
-    @Override
-    public void update(Course obj) throws DataAccessException {
+    public void update(Profile obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
         try {
-            statement = con.prepareStatement("UPDATE " + TABLE_NAME + " SET course_name = ?, start_date=?, end_date=?, exam_id WHERE id = ?");
+            statement = con.prepareStatement("UPDATE " + TABLE_NAME + " SET name= ?, address=? WHERE id = ?");
             statement.setString(1, obj.getName());
-            statement.setDate(2, Date.valueOf(obj.getStartDate()));
-            statement.setDate(3, Date.valueOf(obj.getEndDate()));
-            statement.setInt(4, obj.getExam().getId());
-            statement.setInt(5, obj.getId());
+            statement.setString(2, obj.getAddress());
+            statement.setInt(3, obj.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Update error ", e);
@@ -129,7 +137,6 @@ class CourseDAO implements EntityDAO<Course> {
         }
     }
 
-    @Override
     public void delete(int id) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
@@ -145,5 +152,4 @@ class CourseDAO implements EntityDAO<Course> {
             ConnectionFactory.close(con);
         }
     }
-
 }
