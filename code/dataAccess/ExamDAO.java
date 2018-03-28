@@ -1,7 +1,7 @@
 package dataAccess;
 
-import entity.Exam;
-import entity.StudentProfile;
+import dataAccess.entity.Exam;
+import dataAccess.entity.StudentProfile;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public class ExamDAO {
 
         try {
             statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE id = " +
-                    "(SELECT exam_id FROM enrollments JOIN courses ON courses.id = enrollments.id) WHERE student_id="+student.getId());
+                    "(SELECT exam_id FROM enrollments JOIN courses ON courses.id = enrollments.id) WHERE student_id=" + student.getId());
             statement.executeQuery();
             resultSet = statement.getResultSet();
             while (resultSet.next()) {

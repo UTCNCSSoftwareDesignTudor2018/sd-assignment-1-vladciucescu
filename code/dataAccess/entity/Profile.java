@@ -1,4 +1,4 @@
-package entity;
+package dataAccess.entity;
 
 import java.util.Objects;
 
@@ -24,6 +24,10 @@ public class Profile extends DataEntity {
 
     public String getName() {
         return name;
+    }
+
+    public String getNameNoSpace() {
+        return name.replaceAll("\\s+", "");
     }
 
     public int getId_card_number() {

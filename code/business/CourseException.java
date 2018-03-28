@@ -2,5 +2,7 @@ package business;
 
 public class CourseException extends Exception {
 
-    public CourseException(String message) { super(message);}
+    public CourseException(String message) {
+        super(message);
+    }
 }

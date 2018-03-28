@@ -2,13 +2,14 @@ package business;
 
 import dataAccess.AccountDAO;
 import dataAccess.DataAccessException;
-import entity.Account;
-import entity.StudentProfile;
+import dataAccess.entity.Account;
+import dataAccess.entity.StudentProfile;
+
 public class AccountService {
 
     public Account validateAccount(String username, String password) throws AccountException {
         AccountDAO accountDAO = new AccountDAO();
-        Account account = null;
+        Account account;
         try {
             account = accountDAO.findByUsername(username);
             if (account == null) {
@@ -25,9 +26,9 @@ public class AccountService {
 
     public Account createAccount(String username, String password, String email, StudentProfile studentProfile) throws AccountException {
         AccountDAO accountDAO = new AccountDAO();
-        Account account = null;
+        Account account;
 
-        if (password.length()<6) {
+        if (password.length() < 6) {
             throw new AccountException("New password must have at least 6 characters.");
         }
         try {
@@ -47,18 +48,19 @@ public class AccountService {
 
     public Account updatePassword(Account account, String newPass) throws AccountException {
         AccountDAO accountDAO = new AccountDAO();
-        Account updatedAccount = null;
+        Account updatedAccount;
         if (account.getPassword().equals(newPass)) {
             throw new AccountException("New password must be different from old password.");
         }
 
-        if (newPass.length()<6) {
+        if (newPass.length() < 6) {
             throw new AccountException("New password must have at least 6 characters.");
         }
         updatedAccount = new Account(account.getId(), account.getUsername(), newPass, account.getEmail(), account.getProfile());
         try {
-            accountDAO.insert(updatedAccount);
+            accountDAO.update(updatedAccount);
         } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
             throw new AccountException("Error updating account");
         }
 
@@ -67,14 +69,14 @@ public class AccountService {
 
     public Account updateEmail(Account account, String newMail) throws AccountException {
         AccountDAO accountDAO = new AccountDAO();
-        Account updatedAccount = null;
-        if (account.getPassword().equals(newMail)) {
+        Account updatedAccount;
+        if (account.getEmail().equals(newMail)) {
             throw new AccountException("New email address must be different from old address.");
         }
 
         updatedAccount = new Account(account.getId(), account.getUsername(), account.getPassword(), newMail, account.getProfile());
         try {
-            accountDAO.insert(updatedAccount);
+            accountDAO.update(updatedAccount);
         } catch (DataAccessException e) {
             throw new AccountException("Error updating account");
         }

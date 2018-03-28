@@ -1,4 +1,4 @@
-package entity;
+package dataAccess.entity;
 
 import java.util.Objects;
 
@@ -28,6 +28,8 @@ public class AdminProfile extends Profile {
 
     @Override
     public String toString() {
-        return "AdminProfile{id=" + getId() + "}";
+        return getName() + "\n" +
+                "Id card: " + getId_card_number() + "\n" +
+                "Address: " + getAddress();
     }
 }

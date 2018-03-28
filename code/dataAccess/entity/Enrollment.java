@@ -1,4 +1,4 @@
-package entity;
+package dataAccess.entity;
 
 import java.util.Objects;
 
@@ -53,10 +53,6 @@ public class Enrollment extends DataEntity {
 
     @Override
     public String toString() {
-        return "Enrollment{" +
-                "studentProfile=" + studentProfile +
-                ", course=" + course +
-                ", grade=" + grade +
-                '}';
+        return course.getName();
     }
 }

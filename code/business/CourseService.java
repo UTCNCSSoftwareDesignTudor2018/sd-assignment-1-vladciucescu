@@ -2,10 +2,8 @@ package business;
 
 import dataAccess.CourseDAO;
 import dataAccess.DataAccessException;
-import dataAccess.ExamDAO;
-import entity.Course;
-import entity.Exam;
-import entity.StudentProfile;
+import dataAccess.entity.Course;
+import dataAccess.entity.StudentProfile;
 
 import java.util.List;
 
@@ -13,7 +11,7 @@ public class CourseService {
 
     public List<Course> getCourses() throws CourseException {
         CourseDAO courseDAO = new CourseDAO();
-        List<Course> courses = null;
+        List<Course> courses;
         try {
             courses = courseDAO.findAll();
         } catch (DataAccessException e) {
@@ -22,19 +20,16 @@ public class CourseService {
         return courses;
     }
 
-    public Object[][] toObjectArray(List<Course> courses) {
-        Object res[][] = null;
-        if (courses != null) {
-            res = new Object[courses.size()][];
-            for (int i = 0; i < courses.size(); i++) {
-                res[i] = convertToArray(courses.get(i));
-            }
+    public List<Course> getAvailableCoursesForStudent(StudentProfile student) throws CourseException {
+        CourseDAO courseDAO = new CourseDAO();
+        List<Course> courses;
+        try {
+            courses = courseDAO.findNotEnrolledForStudent(student);
+        } catch (DataAccessException e) {
+            System.out.println(e);
+            throw new CourseException("Error accessing courses");
         }
-        return res;
+        return courses;
     }
 
-    private static Object[] convertToArray(Course c) {
-        Object res[] = { c.getName(), c.getStartDate(), c.getEndDate(), c.getExam().getDate() };
-        return res;
-    }
 }

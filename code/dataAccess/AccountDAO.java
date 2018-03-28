@@ -1,13 +1,13 @@
 package dataAccess;
 
-import entity.Account;
-import entity.Profile;
+import dataAccess.entity.Account;
+import dataAccess.entity.Profile;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccountDAO{
+public class AccountDAO {
 
     private static final String TABLE_NAME = "accounts";
 
@@ -31,7 +31,7 @@ public class AccountDAO{
                         profile));
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Find error ", e);
+            throw new DataAccessException("Find by id error ", e);
         } finally {
             ConnectionFactory.close(resultSet);
             ConnectionFactory.close(statement);
@@ -49,7 +49,7 @@ public class AccountDAO{
         ProfileDAO profileDAO = new ProfileDAO();
 
         try {
-            statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE username = " + username);
+            statement = con.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE username = '" + username + "'");
             statement.executeQuery();
             resultSet = statement.getResultSet();
             if (resultSet.next()) {
@@ -61,7 +61,7 @@ public class AccountDAO{
                         profile));
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Find error ", e);
+            throw new DataAccessException("Find by username error ", e);
         } finally {
             ConnectionFactory.close(resultSet);
             ConnectionFactory.close(statement);
@@ -132,13 +132,13 @@ public class AccountDAO{
     public void update(Account obj) throws DataAccessException {
         Connection con = ConnectionFactory.getConnection();
         PreparedStatement statement = null;
-        ResultSet resultSet = null;
 
         try {
             statement = con.prepareStatement("UPDATE " + TABLE_NAME + " SET password=?, email=? WHERE id = ?");
             statement.setString(1, obj.getPassword());
             statement.setString(2, obj.getEmail());
             statement.setInt(3, obj.getId());
+            statement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Update error ", e);
         } finally {

@@ -1,7 +1,7 @@
 package dataAccess;
 
-import entity.StudentProfile;
-import entity.Profile;
+import dataAccess.entity.Profile;
+import dataAccess.entity.StudentProfile;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,7 +26,7 @@ public class StudentDAO {
             statement.executeQuery();
             resultSet = statement.getResultSet();
             if (resultSet.next()) {
-                Profile profile = profileDAO.findById( resultSet.getInt(1));
+                Profile profile = profileDAO.findById(resultSet.getInt(1));
                 studentProfile = new StudentProfile(profile, resultSet.getInt(2), resultSet.getInt(3));
             }
         } catch (SQLException e) {
@@ -52,7 +52,7 @@ public class StudentDAO {
             statement.executeQuery();
             resultSet = statement.getResultSet();
             while (resultSet.next()) {
-                Profile profile = profileDAO.findById( resultSet.getInt(1));
+                Profile profile = profileDAO.findById(resultSet.getInt(1));
                 studentProfiles.add(new StudentProfile(profile, resultSet.getInt(2), resultSet.getInt(3)));
             }
         } catch (SQLException e) {
@@ -96,9 +96,9 @@ public class StudentDAO {
 
         profileDAO.update(obj);
         try {
-            statement = con.prepareStatement("UPDATE " + TABLE_NAME + " SET year=?, group=? WHERE id = ?");
+            statement = con.prepareStatement("UPDATE " + TABLE_NAME + " SET year=?, `group`=? WHERE id = ?");
             statement.setInt(1, obj.getYear());
-            statement.setInt(2, obj.getGroup());
+            statement.setLong(2, obj.getGroup());
             statement.setInt(3, obj.getId());
             statement.executeUpdate();
         } catch (SQLException e) {

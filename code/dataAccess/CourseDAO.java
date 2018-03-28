@@ -1,7 +1,8 @@
 package dataAccess;
 
-import entity.Course;
-import entity.Exam;
+import dataAccess.entity.Course;
+import dataAccess.entity.Exam;
+import dataAccess.entity.StudentProfile;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -63,6 +64,35 @@ public class CourseDAO {
             }
         } catch (SQLException | NoSuchElementException e) {
             throw new DataAccessException("Find all error ", e);
+        } finally {
+            ConnectionFactory.close(resultSet);
+            ConnectionFactory.close(statement);
+            ConnectionFactory.close(con);
+        }
+
+        return courses;
+    }
+
+    public List<Course> findNotEnrolledForStudent(StudentProfile student) throws DataAccessException {
+        List<Course> courses = new ArrayList<>();
+        Connection con = ConnectionFactory.getConnection();
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        ExamDAO examDAO = new ExamDAO();
+        try {
+            statement = con.prepareStatement("SELECT DISTINCT * FROM " + TABLE_NAME + " WHERE id NOT IN (SELECT course_id FROM enrollments WHERE student_id = " + student.getId() + ")");
+            statement.executeQuery();
+            resultSet = statement.getResultSet();
+            while (resultSet.next()) {
+                Exam exam = examDAO.findById(resultSet.getInt(5));
+                courses.add(new Course(resultSet.getInt(1),
+                        resultSet.getString(2),
+                        resultSet.getDate(3).toLocalDate(),
+                        resultSet.getDate(4).toLocalDate(),
+                        exam));
+            }
+        } catch (SQLException | NoSuchElementException e) {
+            throw new DataAccessException("Find available courses error ", e);
         } finally {
             ConnectionFactory.close(resultSet);
             ConnectionFactory.close(statement);

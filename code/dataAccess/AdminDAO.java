@@ -1,7 +1,7 @@
 package dataAccess;
 
-import entity.AdminProfile;
-import entity.Profile;
+import dataAccess.entity.AdminProfile;
+import dataAccess.entity.Profile;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

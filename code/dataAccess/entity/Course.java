@@ -1,4 +1,4 @@
-package entity;
+package dataAccess.entity;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -62,11 +62,6 @@ public class Course extends DataEntity {
 
     @Override
     public String toString() {
-        return "Course{" +
-                "name='" + name + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", exam=" + exam +
-                '}';
+        return name;
     }
 }

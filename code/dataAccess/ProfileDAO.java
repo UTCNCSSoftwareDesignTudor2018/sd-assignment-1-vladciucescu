@@ -1,6 +1,6 @@
 package dataAccess;
 
-import entity.Profile;
+import dataAccess.entity.Profile;
 
 import java.sql.*;
 import java.util.ArrayList;

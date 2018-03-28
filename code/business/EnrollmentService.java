@@ -4,26 +4,26 @@ import dataAccess.CourseDAO;
 import dataAccess.DataAccessException;
 import dataAccess.EnrollmentDAO;
 import dataAccess.StudentDAO;
-import entity.Course;
-import entity.Enrollment;
-import entity.StudentProfile;
+import dataAccess.entity.Course;
+import dataAccess.entity.Enrollment;
+import dataAccess.entity.StudentProfile;
 
 import java.util.List;
 
 public class EnrollmentService {
 
-    public Enrollment createEnrollment(StudentProfile student, Course course) throws EnrollmentException {
+    public void createEnrollment(StudentProfile student, Course course) throws EnrollmentException {
         StudentDAO studentDAO = new StudentDAO();
         CourseDAO courseDAO = new CourseDAO();
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
-        Enrollment enrollment = null;
+        Enrollment enrollment;
         try {
             StudentProfile s = studentDAO.findById(student.getId());
-            if (s==null) {
+            if (s == null) {
                 throw new EnrollmentException("Invalid student");
             }
             Course c = courseDAO.findById(course.getId());
-            if (c==null) {
+            if (c == null) {
                 throw new EnrollmentException("Invalid course");
             }
             int newId = enrollmentDAO.insert(new Enrollment(0, s, c, 0.0));
@@ -32,12 +32,11 @@ public class EnrollmentService {
             throw new EnrollmentException("Error creating enrollment");
         }
 
-        return enrollment;
     }
 
     public List<Enrollment> getEnrollments() throws EnrollmentException {
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
-        List<Enrollment> enrollments = null;
+        List<Enrollment> enrollments;
         try {
             enrollments = enrollmentDAO.findAll();
         } catch (DataAccessException e) {
@@ -48,7 +47,7 @@ public class EnrollmentService {
 
     public List<Enrollment> getEnrollmentsForStudent(StudentProfile student) throws EnrollmentException {
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
-        List<Enrollment> enrollments = null;
+        List<Enrollment> enrollments;
         try {
             enrollments = enrollmentDAO.findAllForStudent(student);
         } catch (DataAccessException e) {
@@ -57,10 +56,9 @@ public class EnrollmentService {
         return enrollments;
     }
 
-    public Enrollment updateGrade(Enrollment enrollment, double newGrade) throws EnrollmentException {
+    public void updateGrade(Enrollment enrollment, double newGrade) throws EnrollmentException {
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
-        Enrollment newEnrollment = null;
-        if (newGrade <1.0 || newGrade > 10.0) {
+        if (newGrade < 1.0 || newGrade > 10.0) {
             throw new EnrollmentException("Invalid grade");
         }
         Enrollment updatedEnrollment = new Enrollment(enrollment.getId(), enrollment.getStudentProfile(), enrollment.getCourse(), newGrade);
@@ -69,7 +67,6 @@ public class EnrollmentService {
         } catch (DataAccessException e) {
             throw new EnrollmentException("Error updating enrollment");
         }
-        return updatedEnrollment;
     }
 
     public void deleteEnrollment(Enrollment enr) throws EnrollmentException {
@@ -81,19 +78,5 @@ public class EnrollmentService {
         }
     }
 
-    public Object[][] toObjectArray(List<Enrollment> enrollments) {
-        Object res[][] = null;
-        if (enrollments != null) {
-            res = new Object[enrollments.size()][];
-            for (int i = 0; i < enrollments.size(); i++) {
-                res[i] = convertToArray(enrollments.get(i));
-            }
-        }
-        return res;
-    }
 
-    private static Object[] convertToArray(Enrollment e) {
-        Object res[] = { e.getCourse().getName(),  e.getCourse().getEndDate(), e.getGrade() };
-        return res;
-    }
 }

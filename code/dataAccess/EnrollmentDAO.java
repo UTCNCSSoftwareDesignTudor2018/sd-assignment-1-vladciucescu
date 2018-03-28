@@ -1,8 +1,8 @@
 package dataAccess;
 
-import entity.Course;
-import entity.Enrollment;
-import entity.StudentProfile;
+import dataAccess.entity.Course;
+import dataAccess.entity.Enrollment;
+import dataAccess.entity.StudentProfile;
 
 import java.sql.*;
 import java.util.ArrayList;

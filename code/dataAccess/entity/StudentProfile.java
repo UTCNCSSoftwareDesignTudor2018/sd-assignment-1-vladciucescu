@@ -1,4 +1,4 @@
-package entity;
+package dataAccess.entity;
 
 import java.util.Objects;
 
@@ -45,9 +45,10 @@ public class StudentProfile extends Profile {
 
     @Override
     public String toString() {
-        return "StudentProfile{" +
-                "year=" + year +
-                ", group=" + group +
-                '}';
+        return getName() + " \n" +
+                "Id card: " + getId_card_number() + " \n" +
+                "Address: " + getAddress() + " \n" +
+                "Year: " + year + " \n" +
+                "Group: " + group + " \n";
     }
 }
