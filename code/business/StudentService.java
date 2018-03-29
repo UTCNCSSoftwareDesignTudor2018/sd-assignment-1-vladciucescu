@@ -136,7 +136,6 @@ public class StudentService {
                 writer.newLine();
             }
         } catch (Exception e) {
-            System.out.println(e);
             throw new ProfileException("Cannot create report");
         }
         return out;

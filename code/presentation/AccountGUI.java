@@ -4,6 +4,15 @@
 
 package presentation;
 
+import business.AccountException;
+import business.AccountService;
+import business.ProfileException;
+import business.ProfileService;
+import dataAccess.entity.Account;
+import dataAccess.entity.AdminProfile;
+import dataAccess.entity.Profile;
+import dataAccess.entity.StudentProfile;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,56 +22,53 @@ import java.util.Arrays;
  * @author Vlad Ciucescu
  */
 class AccountGUI extends JFrame {
-    private final Presenter presenter;
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
+    private final SessionData sessionData;
+
+    private final LoginGUI loginGUI;
     private JPanel pnlAccount;
-    private JButton btnLogOut;
     private JLabel lblUser;
-    private JButton btnModPass;
-    private JButton btnModEmail;
-    private JButton btnProfile;
     private JPanel pnlPass;
     private JPasswordField pfOld;
     private JPasswordField pfNew1;
     private JPasswordField pfNew2;
-    private JLabel lblOldPass;
-    private JLabel lblNewPass1;
-    private JLabel lblNewPass2;
-    private JButton btnConfirmPass;
-    private JButton btnCancelPass;
     private JLabel lblPassError;
     private JLabel lblPSuccess;
     private JPanel pnlEmail;
-    private JLabel lblEmailPass;
     private JPasswordField pfEmail;
-    private JLabel lblEmailPass2;
     private JTextField tfEmail;
-    private JButton bntBack2;
-    private JButton bntBack3;
     private JLabel lblMailError;
     private JLabel lblMSuccess;
-    public AccountGUI(Presenter presenter) {
-        this.presenter = presenter;
+
+    public AccountGUI(SessionData sessionData, LoginGUI loginGUI) {
+        this.loginGUI = loginGUI;
+        this.sessionData = sessionData;
         initComponents();
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.pack();
         this.setLocationRelativeTo(null);
-        this.lblUser.setText(presenter.getUsername());
+        this.lblUser.setText(getUsername());
     }
 
-    public void setPassError(Boolean error, String message) {
+    private String getUsername() {
+        if (sessionData.getCurrentAccount() == null) return "";
+        return sessionData.getCurrentAccount().getUsername();
+    }
+
+    private void setPassError(Boolean error, String message) {
         lblPassError.setVisible(error);
         lblPassError.setText(message);
     }
 
-    public void setMailError(Boolean error, String message) {
+    private void setMailError(Boolean error, String message) {
         lblMailError.setVisible(error);
         lblMailError.setText(message);
     }
 
     private void btnLogOutActionPerformed(ActionEvent e) {
-        presenter.logOut();
+
+        sessionData.setCurrentAccount(null);
+        loginGUI.setVisible(true);
+        dispose();
     }
 
     private void btnModPassActionPerformed(ActionEvent e) {
@@ -80,6 +86,37 @@ class AccountGUI extends JFrame {
         pnlAccount.setVisible(true);
     }
 
+    private boolean validatePassword(char[] password) {
+        return !sessionData.getCurrentAccount().getPassword().equals(String.valueOf(password));
+    }
+
+    private boolean updatePassword(char[] newPass) {
+        Account acc;
+        try {
+            acc = new AccountService().updatePassword(sessionData.getCurrentAccount(), String.valueOf(newPass));
+        } catch (AccountException e) {
+            setPassError(true, e.getMessage());
+            return false;
+        }
+        sessionData.setCurrentAccount(acc);
+        setPassError(false, "");
+        return true;
+    }
+
+
+    private boolean updateEmail(String newM) {
+        Account acc;
+        try {
+            acc = new AccountService().updateEmail(sessionData.getCurrentAccount(), newM);
+        } catch (AccountException e) {
+            setMailError(true, e.getMessage());
+            return false;
+        }
+        sessionData.setCurrentAccount(acc);
+        setMailError(false, "");
+        return true;
+    }
+
     private void btnConfirmPassActionPerformed(ActionEvent e) {
         lblPSuccess.setVisible(false);
         char[] old = pfOld.getPassword();
@@ -89,7 +126,7 @@ class AccountGUI extends JFrame {
             setPassError(true, "Please fill in all the fields.");
             return;
         }
-        if (!presenter.validatePassword(old)) {
+        if (validatePassword(old)) {
             setPassError(true, "Current password is wrong.");
             return;
         }
@@ -97,7 +134,7 @@ class AccountGUI extends JFrame {
             setPassError(true, "Confirmation password does not match.");
             return;
         }
-        if (presenter.updatePassword(new1)) {
+        if (updatePassword(new1)) {
             lblPSuccess.setVisible(true);
             pfOld.setText("");
             pfNew1.setText("");
@@ -122,11 +159,11 @@ class AccountGUI extends JFrame {
             setMailError(true, "Please fill in all the fields.");
             return;
         }
-        if (!presenter.validatePassword(pass)) {
+        if (validatePassword(pass)) {
             setMailError(true, "Password is wrong.");
             return;
         }
-        if (presenter.updateEmail(mail)) {
+        if (updateEmail(mail)) {
             lblMSuccess.setVisible(true);
             pfEmail.setText("");
             tfEmail.setText("");
@@ -138,37 +175,66 @@ class AccountGUI extends JFrame {
         pnlEmail.setVisible(true);
     }
 
+    private void showProfile() {
+        setVisible(false);
+        ProfileGUI profileGUI = new ProfileGUI(sessionData, this);
+        profileGUI.setVisible(true);
+        String title = "Administrator ";
+        Profile profile;
+        try {
+            sessionData.setAdmin(true);
+            profile = new ProfileService().getAdmin(sessionData.getCurrentAccount().getId());
+            sessionData.setCurrentAdminProfile((AdminProfile) profile);
+            if (profile == null) {
+                title = "Student ";
+                sessionData.setAdmin(false);
+                profile = new ProfileService().getStudent(sessionData.getCurrentAccount().getId());
+                sessionData.setCurrentStudentProfile((StudentProfile) profile);
+            }
+        } catch (ProfileException e) {
+            profileGUI.setTitleL(e.getMessage());
+            return;
+        }
+        profileGUI.setTitleL(title + profile.getName());
+        if (sessionData.isAdmin()) {
+            profileGUI.displayAdminButtons();
+        } else {
+            profileGUI.displayStudentButtons();
+        }
+        profileGUI.displayProfileData(profile.toString());
+    }
+
     private void btnProfileActionPerformed(ActionEvent e) {
-        presenter.showProfile();
+        showProfile();
     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
         pnlAccount = new JPanel();
-        btnLogOut = new JButton();
+        JButton btnLogOut = new JButton();
         lblUser = new JLabel();
-        btnModPass = new JButton();
-        btnModEmail = new JButton();
-        btnProfile = new JButton();
+        JButton btnModPass = new JButton();
+        JButton btnModEmail = new JButton();
+        JButton btnProfile = new JButton();
         pnlPass = new JPanel();
         pfOld = new JPasswordField();
         pfNew1 = new JPasswordField();
         pfNew2 = new JPasswordField();
-        lblOldPass = new JLabel();
-        lblNewPass1 = new JLabel();
-        lblNewPass2 = new JLabel();
-        btnConfirmPass = new JButton();
-        btnCancelPass = new JButton();
+        JLabel lblOldPass = new JLabel();
+        JLabel lblNewPass1 = new JLabel();
+        JLabel lblNewPass2 = new JLabel();
+        JButton btnConfirmPass = new JButton();
+        JButton btnCancelPass = new JButton();
         lblPassError = new JLabel();
         lblPSuccess = new JLabel();
         pnlEmail = new JPanel();
-        lblEmailPass = new JLabel();
+        JLabel lblEmailPass = new JLabel();
         pfEmail = new JPasswordField();
-        lblEmailPass2 = new JLabel();
+        JLabel lblEmailPass2 = new JLabel();
         tfEmail = new JTextField();
-        bntBack2 = new JButton();
-        bntBack3 = new JButton();
+        JButton bntBack2 = new JButton();
+        JButton bntBack3 = new JButton();
         lblMailError = new JLabel();
         lblMSuccess = new JLabel();
 

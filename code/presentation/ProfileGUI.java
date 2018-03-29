@@ -4,6 +4,13 @@
 
 package presentation;
 
+import business.AdminService;
+import business.ProfileException;
+import business.StudentService;
+import dataAccess.entity.AdminProfile;
+import dataAccess.entity.Profile;
+import dataAccess.entity.StudentProfile;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -12,11 +19,15 @@ import javax.swing.*;
  * @author Vlad Ciucescu
  */
 class ProfileGUI extends JFrame {
-    private final Presenter presenter;
     private boolean modOwn;
+    private final SessionData sessionData;
+    private final AccountGUI accountGUI;
+    private final SelectStudentGUI ssGUI;
 
-    public ProfileGUI(Presenter presenter) {
-        this.presenter = presenter;
+    public ProfileGUI(SessionData sessionData, AccountGUI accountGUI) {
+        this.sessionData = sessionData;
+        this.ssGUI = new SelectStudentGUI(sessionData, this);
+        this.accountGUI = accountGUI;
         initComponents();
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setTitle("Profile");
@@ -29,7 +40,7 @@ class ProfileGUI extends JFrame {
         lblTitle.setText(title);
     }
 
-    public void setError(boolean error, String message) {
+    private void setError(boolean error, String message) {
         lblError.setText(message);
         lblError.setVisible(error);
     }
@@ -53,12 +64,25 @@ class ProfileGUI extends JFrame {
     }
 
     private void btnBackActionPerformed(ActionEvent e) {
-        presenter.showAccount();
+        showAccount();
+    }
+
+    private void showAccount() {
+        sessionData.setCurrentAdminProfile(null);
+        sessionData.setCurrentStudentProfile(null);
+        accountGUI.setVisible(true);
+        this.dispose();
     }
 
     private void btnAdmChgStudActionPerformed(ActionEvent e) {
         modOwn = false;
-        presenter.openSSWindow(false);
+        openSSWindow(false);
+    }
+
+    private void openSSWindow(boolean reqE) {
+        setVisible(false);
+        ssGUI.forEnrollments(reqE);
+        ssGUI.setVisible(true);
     }
 
     private void btnAdmChgOwnActionPerformed(ActionEvent e) {
@@ -87,10 +111,27 @@ class ProfileGUI extends JFrame {
             setError(true, "Please enter the new name.");
             return;
         }
-        if (presenter.updateName(name, modOwn)) {
+        if (updateName(name, modOwn)) {
             lblSuccess.setVisible(true);
             lblSuccess.setText("Updated name");
         }
+    }
+
+    private boolean updateName(String newN, boolean admin) {
+        Profile profile;
+        try {
+            if (admin)
+                profile = new AdminService().updateName(sessionData.getCurrentAdminProfile(), newN);
+            else
+                profile = new StudentService().updateName(sessionData.getCurrentStudentProfile(), newN);
+        } catch (ProfileException e) {
+            setError(true, e.getMessage());
+            return false;
+        }
+        if (admin) sessionData.setCurrentAdminProfile((AdminProfile) profile);
+        else sessionData.setCurrentStudentProfile((StudentProfile) profile);
+        setError(false, "");
+        return true;
     }
 
     private void btnUpdAddrActionPerformed(ActionEvent e) {
@@ -101,14 +142,44 @@ class ProfileGUI extends JFrame {
             setError(true, "Please enter the new address.");
             return;
         }
-        if (presenter.updateAddress(addr, modOwn)) {
+        if (updateAddress(addr, modOwn)) {
             lblSuccess.setVisible(true);
             lblSuccess.setText("Updated address");
         }
     }
 
+    private boolean updateAddress(String addr, boolean admin) {
+        Profile profile;
+        try {
+            if (admin)
+                profile = new AdminService().updateAddress(sessionData.getCurrentAdminProfile(), addr);
+            else
+                profile = new StudentService().updateAddress(sessionData.getCurrentStudentProfile(), addr);
+        } catch (ProfileException e) {
+            setError(true, e.getMessage());
+            return false;
+        }
+        if (admin) sessionData.setCurrentAdminProfile((AdminProfile) profile);
+        else sessionData.setCurrentStudentProfile((StudentProfile) profile);
+        setError(false, "");
+        return true;
+    }
+
     private void btnEnrollmentsActionPerformed(ActionEvent e) {
-        presenter.showEnrollments();
+        showEnrollments();
+    }
+
+    private void showEnrollments() {
+        if (sessionData.isAdmin()) {
+            openSSWindow(true);
+        } else {
+            setVisible(false);
+            EnrollmentGUI enrollmentGUI = new EnrollmentGUI(sessionData, this);
+            enrollmentGUI.setVisible(true);
+            enrollmentGUI.studentView(true);
+            enrollmentGUI.setTitleL("Enrollments of " + sessionData.getCurrentStudentProfile().getName());
+            enrollmentGUI.updateTables();
+        }
     }
 
     private void btnUpdYrActionPerformed(ActionEvent e) {
@@ -130,11 +201,25 @@ class ProfileGUI extends JFrame {
             setError(true, "Invalid year");
             return;
         }
-        if(presenter.updateYear(yr)){
+        if(updateYear(yr)){
             lblSuccess.setVisible(true);
             lblSuccess.setText("Updated year");
         }
     }
+
+    private boolean updateYear(int year) {
+        StudentProfile profile;
+        try {
+            profile = new StudentService().updateStudentYear(sessionData.getCurrentStudentProfile(), year);
+        } catch (ProfileException e) {
+            setError(true, e.getMessage());
+            return false;
+        }
+        sessionData.setCurrentStudentProfile(profile);
+        setError(false, "");
+        return true;
+    }
+
 
     private void btnUpdGrActionPerformed(ActionEvent e) {
         lblSuccess.setText("");
@@ -155,42 +240,53 @@ class ProfileGUI extends JFrame {
             setError(true, "Invalid group");
             return;
         }
-        if(presenter.updateGroup(gr)){
+        if(updateGroup(gr)){
             lblSuccess.setVisible(true);
             lblSuccess.setText("Updated group");
         }
     }
 
-
+    private boolean updateGroup(int group) {
+        StudentProfile profile;
+        try {
+            profile = new StudentService().updateStudentGroup(sessionData.getCurrentStudentProfile(), group);
+        } catch (ProfileException e) {
+            setError(true, e.getMessage());
+            return false;
+        }
+        sessionData.setCurrentStudentProfile(profile);
+        setError(false, "");
+        return true;
+    }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
         pnlData = new JPanel();
-        btnBack = new JButton();
+        JButton btnBack = new JButton();
         lblTitle = new JLabel();
         taProfileInfo = new JTextArea();
         pnlAdmin = new JPanel();
-        btnAdmChgStud = new JButton();
-        btnAdmChgOwn = new JButton();
-        btnEnrollments = new JButton();
+        JButton btnAdmChgStud = new JButton();
+        JButton btnAdmChgOwn = new JButton();
+        JButton btnEnrollments = new JButton();
         pnlChgProfData = new JPanel();
-        btnUpdName = new JButton();
+        JButton btnUpdName = new JButton();
         tfName = new JTextField();
         tfAddr = new JTextField();
-        lblAddress = new JLabel();
-        lblName = new JLabel();
-        btnBack2 = new JButton();
-        btnUpdAddr = new JButton();
+        JLabel lblAddress = new JLabel();
+        JLabel lblName = new JLabel();
+        JButton btnBack2 = new JButton();
+        JButton btnUpdAddr = new JButton();
         lblError = new JLabel();
         lblSuccess = new JLabel();
         pnlChgStudData = new JPanel();
         tfYr = new JTextField();
-        lblYr = new JLabel();
+        JLabel lblYr = new JLabel();
         tfGroup = new JTextField();
-        lblGroup = new JLabel();
-        btnUpdYr = new JButton();
-        btnUpdGr = new JButton();
+        JLabel lblGroup = new JLabel();
+        JButton btnUpdYr = new JButton();
+        JButton btnUpdGr = new JButton();
 
         //======== this ========
         setResizable(false);
@@ -435,29 +531,16 @@ class ProfileGUI extends JFrame {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
     private JPanel pnlData;
-    private JButton btnBack;
     private JLabel lblTitle;
     private JTextArea taProfileInfo;
     private JPanel pnlAdmin;
-    private JButton btnAdmChgStud;
-    private JButton btnAdmChgOwn;
-    private JButton btnEnrollments;
     private JPanel pnlChgProfData;
-    private JButton btnUpdName;
     private JTextField tfName;
     private JTextField tfAddr;
-    private JLabel lblAddress;
-    private JLabel lblName;
-    private JButton btnBack2;
-    private JButton btnUpdAddr;
     private JLabel lblError;
     private JLabel lblSuccess;
     private JPanel pnlChgStudData;
     private JTextField tfYr;
-    private JLabel lblYr;
     private JTextField tfGroup;
-    private JLabel lblGroup;
-    private JButton btnUpdYr;
-    private JButton btnUpdGr;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

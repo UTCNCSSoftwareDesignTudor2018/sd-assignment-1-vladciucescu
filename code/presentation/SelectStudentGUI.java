@@ -5,19 +5,26 @@
 package presentation;
 
 import java.awt.event.*;
+
+import business.ProfileException;
+import business.StudentService;
 import dataAccess.entity.StudentProfile;
 
 import java.awt.*;
+import java.util.Vector;
 import javax.swing.*;
 
 /**
  * @author Vlad Ciucescu
  */
 class SelectStudentGUI extends JFrame {
-    private final Presenter presenter;
+    private final SessionData sessionData;
+    private final ProfileGUI profileGUI;
     private boolean fe;
-    public SelectStudentGUI(Presenter presenter) {
-        this.presenter = presenter;
+
+    public SelectStudentGUI(SessionData sessionData, ProfileGUI profileGUI) {
+        this.sessionData = sessionData;
+        this.profileGUI = profileGUI;
         initComponents();
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setTitle("Select student");
@@ -31,18 +38,40 @@ class SelectStudentGUI extends JFrame {
     }
 
     private void createUIComponents() {
-        cbStudents = new JComboBox<>(presenter.getStudentsVector());
+        Vector<StudentProfile> students = new Vector<>();
+        try {
+            students = new StudentService().getStudentVector();
+        } catch (ProfileException e) {
+        }
+        cbStudents = new JComboBox<>(students);
     }
 
     private void btnBackActionPerformed(ActionEvent e) {
-        presenter.backToProfileWindow();
+        profileGUI.setVisible(true);
+        setVisible(false);
     }
 
     private void btnDoneActionPerformed(ActionEvent e) {
         StudentProfile student = (StudentProfile) cbStudents.getSelectedItem();
         this.setVisible(false);
-        if (fe) presenter.studentSelectedForEnroll(student);
-        else presenter.studentSelectedForChange(student);
+        if (fe) studentSelectedForEnroll(student);
+        else studentSelectedForChange(student);
+    }
+
+    private void studentSelectedForEnroll(StudentProfile student) {
+        EnrollmentGUI enrollmentGUI = new EnrollmentGUI(sessionData, profileGUI);
+        enrollmentGUI.setVisible(true);
+        sessionData.setCurrentStudentProfile(student);
+        profileGUI.setVisible(false);
+        enrollmentGUI.setTitleL("Enrollments of " + sessionData.getCurrentStudentProfile().getName());
+        enrollmentGUI.updateTables();
+        enrollmentGUI.studentView(false);
+    }
+
+    private void studentSelectedForChange(StudentProfile student) {
+        profileGUI.setVisible(true);
+        profileGUI.showStudentEditPnl();
+        sessionData.setCurrentStudentProfile(student);
     }
 
     private void initComponents() {
@@ -50,8 +79,8 @@ class SelectStudentGUI extends JFrame {
         // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
         createUIComponents();
 
-        btnBack = new JButton();
-        btnDone = new JButton();
+        JButton btnBack = new JButton();
+        JButton btnDone = new JButton();
 
         //======== this ========
         setResizable(false);
@@ -81,10 +110,6 @@ class SelectStudentGUI extends JFrame {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
-    private JButton btnBack;
-    private JButton btnDone;
     private JComboBox cbStudents;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

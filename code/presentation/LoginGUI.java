@@ -1,14 +1,18 @@
 package presentation;
 
+import business.AccountException;
+import business.AccountService;
+import dataAccess.entity.Account;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
 class LoginGUI extends JFrame{
-    private final Presenter presenter;
+    private final SessionData sessionData;
 
-    public LoginGUI(Presenter presenter) {
-        this.presenter = presenter;
+    public LoginGUI() {
+        this.sessionData = new SessionData();
         this.setTitle("Login");
         initComponents();
         this.setContentPane(loginPanel);
@@ -17,7 +21,7 @@ class LoginGUI extends JFrame{
         this.setLocationRelativeTo(null);
     }
 
-    public void setError(Boolean error, String message) {
+    private void setError(Boolean error, String message) {
         lblError.setVisible(error);
         lblError.setText(message);
     }
@@ -34,22 +38,37 @@ class LoginGUI extends JFrame{
             setError(true, "Please input password");
             return;
         }
-        presenter.attemptLogin(username, password);
+        attemptLogin(username, password);
+    }
+
+    private void attemptLogin(String username, char[] password) {
+        Account account;
+        try {
+            account = new AccountService().validateAccount(username, String.valueOf(password));
+        } catch (AccountException e) {
+            setError(true, e.getMessage());
+            return;
+        }
+        sessionData.setCurrentAccount(account);
+        setError(false, "");
+        this.setVisible(false);
+        AccountGUI accountGUI = new AccountGUI(sessionData, this);
+        accountGUI.setVisible(true);
     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
         loginPanel = new JPanel();
-        loginDataPanel = new JPanel();
-        lblLogin = new JLabel();
+        JPanel loginDataPanel = new JPanel();
+        JLabel lblLogin = new JLabel();
         tfUsername = new JTextField();
-        lblUser = new JLabel();
-        lblPass = new JLabel();
-        btnLogin = new JButton();
+        JLabel lblUser = new JLabel();
+        JLabel lblPass = new JLabel();
+        JButton btnLogin = new JButton();
         passwordField1 = new JPasswordField();
         lblError = new JLabel();
-        lblTitle = new JLabel();
+        JLabel lblTitle = new JLabel();
 
         //======== loginPanel ========
         {
@@ -155,14 +174,8 @@ class LoginGUI extends JFrame{
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
     private JPanel loginPanel;
-    private JPanel loginDataPanel;
-    private JLabel lblLogin;
     private JTextField tfUsername;
-    private JLabel lblUser;
-    private JLabel lblPass;
-    private JButton btnLogin;
     private JPasswordField passwordField1;
     private JLabel lblError;
-    private JLabel lblTitle;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

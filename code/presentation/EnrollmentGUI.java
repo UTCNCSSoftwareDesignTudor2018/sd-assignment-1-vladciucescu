@@ -4,6 +4,7 @@
 
 package presentation;
 
+import business.*;
 import dataAccess.entity.Course;
 import dataAccess.entity.Enrollment;
 
@@ -20,10 +21,12 @@ import javax.swing.*;
  * @author Vlad Ciucescu
  */
 class EnrollmentGUI extends JFrame {
-    private final Presenter presenter;
+    private final SessionData sessionData;
+    private final ProfileGUI profileGUI;
 
-    public EnrollmentGUI(Presenter presenter) {
-        this.presenter = presenter;
+    public EnrollmentGUI(SessionData sessionData, ProfileGUI profileGUI) {
+        this.sessionData = sessionData;
+        this.profileGUI = profileGUI;
         initComponents();
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setTitle("Enrollments");
@@ -35,9 +38,26 @@ class EnrollmentGUI extends JFrame {
         lblTitle.setText(title);
     }
 
+
+    private List<Enrollment> getStudentEnrollments() {
+        try {
+            return new EnrollmentService().getEnrollmentsForStudent(sessionData.getCurrentStudentProfile());
+        } catch (EnrollmentException e) {
+            return null;
+        }
+    }
+
+    private List<Course> getAvailableCourses() {
+        try {
+            return new CourseService().getAvailableCoursesForStudent(sessionData.getCurrentStudentProfile());
+        } catch (CourseException e) {
+            return null;
+        }
+    }
+
     public void updateTables() {
-        List<Enrollment> enrollmentList = presenter.getStudentEnrollments();
-        List<Course> courseList = presenter.getAvailableCourses();
+        List<Enrollment> enrollmentList = getStudentEnrollments();
+        List<Course> courseList = getAvailableCourses();
         updateAvailableTable(courseList);
         updateEnrolledTable(enrollmentList);
 
@@ -48,7 +68,7 @@ class EnrollmentGUI extends JFrame {
         for (Course c: courseList) cbAvailable.addItem(c);
     }
 
-    public void setError(boolean error, String message) {
+    private void setError(boolean error, String message) {
         lblError.setText(message);
         lblError.setVisible(error);
     }
@@ -59,7 +79,7 @@ class EnrollmentGUI extends JFrame {
     }
 
     private void btnBackActionPerformed(ActionEvent e) {
-        presenter.backToProfileWindow();
+        profileGUI.setVisible(true);
         this.setVisible(false);
         this.dispose();
     }
@@ -139,9 +159,20 @@ class EnrollmentGUI extends JFrame {
         lblSuccess.setText("");
         Course course = (Course)cbAvailable.getSelectedItem();
         if (course == null) return;
-        boolean ok = presenter.addEnrollment(course);
+        boolean ok = addEnrollment(course);
         if (ok) lblSuccess.setText("Successfully enrolled");
         updateTables();
+    }
+
+    private boolean addEnrollment(Course course) {
+        try {
+            new EnrollmentService().createEnrollment(sessionData.getCurrentStudentProfile(), course);
+        } catch (EnrollmentException e) {
+            setError(true, e.getMessage());
+            return false;
+        }
+        setError(false, "");
+        return true;
     }
 
     private void btnDelActionPerformed(ActionEvent e) {
@@ -149,8 +180,19 @@ class EnrollmentGUI extends JFrame {
         lblSuccess.setText("");
         Enrollment enrollment = (Enrollment)cbEnrolled.getSelectedItem();
         if (enrollment == null) return;
-        if (presenter.deleteEnrollment(enrollment)) lblSuccess.setText("Enrollment deleted");
+        if (deleteEnrollment(enrollment)) lblSuccess.setText("Enrollment deleted");
         updateTables();
+    }
+
+    private boolean deleteEnrollment(Enrollment en) {
+        try {
+            new EnrollmentService().deleteEnrollment(en);
+        } catch (EnrollmentException e) {
+            setError(true, e.getMessage());
+            return false;
+        }
+        setError(false, "");
+        return true;
     }
 
     private void btnGradeActionPerformed(ActionEvent e) {
@@ -174,12 +216,24 @@ class EnrollmentGUI extends JFrame {
             setError(true, "Invalid grade");
             return;
         }
-        if(presenter.updateGrade(enrollment, grade)){
+        if(updateGrade(enrollment, grade)){
             lblSuccess.setVisible(true);
             lblSuccess.setText("Updated grade");
         }
         updateTables();
     }
+
+    private boolean updateGrade(Enrollment en, double grade) {
+        try {
+            new EnrollmentService().updateGrade(en, grade);
+        } catch (EnrollmentException e) {
+            setError(true, e.getMessage());
+            return false;
+        }
+        setError(false, "");
+        return true;
+    }
+
 
     private void btnReportActionPerformed(ActionEvent e) {
         lblSuccess.setText("");
@@ -194,7 +248,7 @@ class EnrollmentGUI extends JFrame {
             setError(true, "Invalid date");
             return;
         }
-        File report = presenter.getReport(start,end);
+        File report = getReport(start,end);
         if (report == null) return;
         try {
             java.awt.Desktop.getDesktop().edit(report);
@@ -206,34 +260,49 @@ class EnrollmentGUI extends JFrame {
         lblSuccess.setText("Report created");
     }
 
+    private File getReport(LocalDate d1, LocalDate d2) {
+        File report;
+        if (d1.isAfter(d2)) {
+            setError(true, "First date must be before second date");
+            return null;
+        }
+        try {
+            report = new StudentService().createReport(sessionData.getCurrentStudentProfile(), d1, d2);
+        } catch (ProfileException e) {
+            setError(true, e.getMessage());
+            return null;
+        }
+        return report;
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
-        btnBack = new JButton();
+        JButton btnBack = new JButton();
         spEnrolled = new JScrollPane();
         tblEnrolled = new JTable();
-        lblEnrolled = new JLabel();
+        JLabel lblEnrolled = new JLabel();
         cbEnrolled = new JComboBox();
-        lblGetDetails = new JLabel();
+        JLabel lblGetDetails = new JLabel();
         lblTitle = new JLabel();
-        btnDetails = new JButton();
+        JButton btnDetails = new JButton();
         pnlStud = new JPanel();
-        btnEnroll = new JButton();
+        JButton btnEnroll = new JButton();
         cbAvailable = new JComboBox();
-        lblEnroll = new JLabel();
+        JLabel lblEnroll = new JLabel();
         spAvailable = new JScrollPane();
         tblAvailable = new JTable();
-        lblAvailable = new JLabel();
+        JLabel lblAvailable = new JLabel();
         pnlAdmin = new JPanel();
-        btnDel = new JButton();
+        JButton btnDel = new JButton();
         tfStart = new JTextField();
         tfEnd = new JTextField();
-        lblStart = new JLabel();
-        lblEnd = new JLabel();
-        btnReport = new JButton();
+        JLabel lblStart = new JLabel();
+        JLabel lblEnd = new JLabel();
+        JButton btnReport = new JButton();
         tfGrade = new JTextField();
-        lblGrade = new JLabel();
-        btnGrade = new JButton();
+        JLabel lblGrade = new JLabel();
+        JButton btnGrade = new JButton();
         lblError = new JLabel();
         lblSuccess = new JLabel();
 
@@ -426,33 +495,18 @@ class EnrollmentGUI extends JFrame {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner Evaluation license - Vlad Ciucescu
-    private JButton btnBack;
     private JScrollPane spEnrolled;
     private JTable tblEnrolled;
-    private JLabel lblEnrolled;
     private JComboBox cbEnrolled;
-    private JLabel lblGetDetails;
     private JLabel lblTitle;
-    private JButton btnDetails;
     private JPanel pnlStud;
-    private JButton btnEnroll;
     private JComboBox cbAvailable;
-    private JLabel lblEnroll;
     private JScrollPane spAvailable;
     private JTable tblAvailable;
-    private JLabel lblAvailable;
     private JPanel pnlAdmin;
-    private JButton btnDel;
     private JTextField tfStart;
     private JTextField tfEnd;
-    private JLabel lblStart;
-    private JLabel lblEnd;
-    private JButton btnReport;
     private JTextField tfGrade;
-    private JLabel lblGrade;
-    private JButton btnGrade;
     private JLabel lblError;
     private JLabel lblSuccess;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

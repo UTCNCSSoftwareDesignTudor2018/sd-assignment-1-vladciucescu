@@ -26,7 +26,6 @@ public class CourseService {
         try {
             courses = courseDAO.findNotEnrolledForStudent(student);
         } catch (DataAccessException e) {
-            System.out.println(e);
             throw new CourseException("Error accessing courses");
         }
         return courses;
